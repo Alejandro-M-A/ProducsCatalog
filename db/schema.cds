@@ -1,5 +1,11 @@
 namespace com.logali;
 
+using {
+    cuid,
+    managed
+} from '@sap/cds/common';
+
+
 type Name : String(50);
 
 // type Gender : String enum {
@@ -59,88 +65,120 @@ type Address {
     Country    : String(3);
 }
 
-entity Products {
-    key ID               : UUID;
-        Name             : String not null;
-        Description      : String;
-        ImageUrl         : String;
-        ReleaseDate      : DateTime default $now;
-        DiscontinuedDate : DateTime;
-        Price            : Decimal(16, 2);
-        Height           : type of Price; //Decimal(16, 2);
-        Width            : Decimal(16, 2);
-        Depth            : Decimal(16, 2);
-        Quantity         : Decimal(16, 2);
+entity Products : cuid, managed {
+    // key ID               : UUID;
+    Name             : localized String not null;
+    Description      : localized String;
+    ImageUrl         : String;
+    ReleaseDate      : DateTime default $now;
+    DiscontinuedDate : DateTime;
+    Price            : Decimal(16, 2);
+    Height           : type of Price; //Decimal(16, 2);
+    Width            : Decimal(16, 2);
+    Depth            : Decimal(16, 2);
+    Quantity         : Decimal(16, 2);
+    Supplier         : Association to one Suppliers;
+    UnitOfMesure     : Association to UnitOfMeasures;
+    Currency         : Association to one Currencies;
+    DimensionUnit    : Association to DimensionUnits;
+    Category         : Association to Categories;
+    SalesData        : Association to many SalesData
+                           on SalesData.Product = $self;
+    Reviews          : Association to many ProductReview
+                           on Reviews.Product = $self;
 }
 
-entity Suppliers {
-    key ID      : UUID;
-        Name    : Products:Name; //String;
-        Address : Address;
-        Email   : String;
-        Phone   : String;
-        Fax     : String;
+entity Orders : cuid {
+    //   key Id       : UUID;
+    Date     : Date;
+    Customer : String;
+    Item     : Composition of many OrderItems
+                   on Item.Order = $self;
+}
+
+entity OrderItems : cuid {
+    //  key ID       : UUID;
+    Order    : Association to Orders;
+    Product  : Association to Products;
+    Quantity : Integer;
+}
+
+entity Suppliers : cuid, managed {
+    //  key ID      : UUID;
+    Name    : Products:Name; //String;
+    Address : Address;
+    Email   : String;
+    Phone   : String;
+    Fax     : String;
+    Product : Association to many Products
+                  on Product.Supplier = $self;
 
 }
 
 entity Categories {
     key ID   : String(1);
-        Name : String;
+        Name : localized String;
 }
 
 entity StockAvailability {
     key ID          : Integer;
-        Description : String;
+        Description : localized String;
+        Product     : Association to Products;
 }
 
 entity Currencies {
     key ID          : String(3);
-        Description : String;
+        Description : localized String;
 }
 
 entity UnitOfMeasures {
     key ID          : String(2);
-        Description : String;
+        Description : localized String;
 }
 
 entity DimensionUnits {
     key ID          : String(2);
-        Description : String;
+        Description : localized String;
 };
 
 entity Months {
     key ID               : String(2);
-        Description      : String;
-        ShortDescription : String(3);
+        Description      : localized String;
+        ShortDescription : localized String(3);
 };
 
-entity ProductReview {
-    key Name    : String;
-        Rating  : Integer;
-        Comment : String;
+entity ProductReview : cuid, managed {
+    // key ID      : UUID;
+    Name    : String;
+    Rating  : Integer;
+    Comment : String;
+    Product : Association to Products;
 };
 
-entity SalesData {
-    key ID           : UUID;
-        DeliveryDate : DateTime;
-        Revenue      : Decimal(16, 2);
+entity SalesData : cuid, managed {
+    // key ID            : UUID;
+    DeliveryDate  : DateTime;
+    Revenue       : Decimal(16, 2);
+    Product       : Association to Products;
+    Currency      : Association to Currencies;
+    DeliveryMonth : Association to Months;
 };
 
-entity SelProducts                       as select from Products;
+entity SelProducts   as select from Products;
 
-entity SelProducts1                      as
+entity SelProducts1  as
     select from Products {
         *
     };
 
-entity SelProducts2                      as
+entity SelProducts2  as
     select from Products {
         Name,
         Price,
         Quantity
     };
 
-entity SelProducts3                      as
+entity SelProducts3  as
     select from Products
     left join ProductReview
         on Products.Name = ProductReview.Name
@@ -157,14 +195,14 @@ entity SelProducts3                      as
         Rating;
 
 
-entity ProjProducts                      as projection on Products;
+entity ProjProducts  as projection on Products;
 
-entity ProjProducts2                     as
+entity ProjProducts2 as
     projection on Products {
         *
     };
 
-entity ProjProducts3                     as
+entity ProjProducts3 as
     projection on Products {
         ReleaseDate,
         Name
@@ -186,6 +224,25 @@ entity ProjProducts3                     as
 //                                                 Name = : pName;
 
 extend Products with {
-    PriceCondition: String(2);
-    PriceDetermination: String(3);
+    PriceCondition     : String(2);
+    PriceDetermination : String(3);
+}
+
+
+entity Course {
+    key ID      : UUID;
+        Student : Association to many StudentCourse
+                      on Student.Course = $self;
+}
+
+entity Student {
+    key ID     : UUID;
+        Course : Association to many StudentCourse
+                     on Course.Student = $self;
+}
+
+entity StudentCourse {
+    key ID      : UUID;
+        Student : Association to Student;
+        Course  : Association to Course;
 }
