@@ -1,8 +1,6 @@
 namespace com.training;
 
-using {
-    cuid
-} from '@sap/cds/common';
+using {cuid} from '@sap/cds/common';
 
 
 type Name : String(50);
@@ -87,4 +85,13 @@ entity StudentCourse {
     key ID      : UUID;
         Student : Association to Student;
         Course  : Association to Course;
+}
+
+entity Orders {
+    key ClientEmail : String(65);
+        FirstName   : String(30);
+        LastName    : String(30);
+        CreatedOn   : Date;
+        Reviewed    : Boolean;
+        Approved    : Boolean;
 }
