@@ -26,3 +26,24 @@ content-type: application/json
 
 ### Delete Order
 DELETE  http://localhost:4004/odata/v4/manage-orders/DeleteOrder('client5@client5.com')
+
+### Get Customer rate - Function
+GET  http://localhost:4004/odata/v4/manage-orders/getClientTaxRate(clientEmail='client1@client1.com')
+
+### Cancel Order
+POST  http://localhost:4004/odata/v4/manage-orders/cancelOrder
+content-type: application/json
+
+{"clientEmail" : "client1@client1.com"}
+
+### Get Customer rate - Function - Function Bound
+GET  http://localhost:4004/odata/v4/manage-orders/Orders('client1@client1.com')/ManageOrders.getClientTaxRate(clientEmail='client2@client2.com')
+
+### Cancel Order - Action Bound
+POST  http://localhost:4004/odata/v4/manage-orders/Orders('client2@client2.com')/ManageOrders.cancelOrder
+content-type: application/json
+
+{"clientEmail" : "client2@client2.com"}
+
+### Get Orders
+GET http://localhost:4004/odata/v4/sapbackend-exit/Incidents
